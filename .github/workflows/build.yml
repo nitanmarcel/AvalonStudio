@@ -1,0 +1,37 @@
+name: AvalonStudio Build-Develop
+on: [push]
+
+jobs:
+  build_windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        dotnet-version: ["5.0.x"]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+      - name: Restore
+        working-directory: AvalonStudio/AvalonStudio
+        run: dotnet restore
+      - name: Build
+        working-directory: AvalonStudio/AvalonStudio
+        run: Build
+      - name: Get Short SHa
+        uses: benjlevesque/short-sha@v1.2
+        id: short-sha
+        with:
+          length: 6
+      - name: Archive
+
+        uses: thedoctor0/zip-release@master
+        with:
+          filename: "develop-${{ steps.short-sha.outputs.sha }}-windows.zip"
+      - name: Upload Artefact
+        uses: actions/upload-artifact@v2
+        with:
+          name: AvalonStudio Develop-Windows ${{ steps.short-sha.outputs.sha }}
+          path: develop-${{ steps.short-sha.outputs.sha }}-windows.zip
